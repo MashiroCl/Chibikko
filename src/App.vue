@@ -5,7 +5,9 @@ import * as PIXI from 'pixi.js';
 import { Live2DModel } from 'pixi-live2d-display/cubism4';
 
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { EndOfLineState } from 'typescript';
+
+
+import { invoke } from '@tauri-apps/api/core';
 
 // expose PIXI to window so that this plugin is able to
 // reference window.PIXI.Ticker to automatically update Live2D models
@@ -17,7 +19,8 @@ declare global{
 window.PIXI = PIXI;
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
-
+const prompt = ref('')
+const messages = ref<string[]>([])
 
 onMounted(async () => {
   if(!canvasRef.value){
@@ -47,6 +50,7 @@ onMounted(async () => {
 
   handleClick(model);
 
+  // setInterval(loadStats, 3000);
   console.log("Model loaded")
 
 })
@@ -65,9 +69,31 @@ function handleClick(model: Live2DModel){
     const motion = motionNames[Math.floor(Math.random()*motionNames.length)] 
     model.motion(motion);
   })
- 
 }
 
+  async function loadStats() {
+   const statsJson: string = await invoke("get_status");
+   const stats = JSON.parse(statsJson)
+   console.log(stats); 
+  }
+
+  const handleSend = async () => {
+      const content = prompt.value;
+
+      if(!content.trim()) return;
+
+      prompt.value = '';
+
+      try{
+        console.log("Querying LLM...");
+        const response:string = await invoke("query_llm", {prompt: content});
+        messages.value.push(response);
+      } catch (e) {
+        console.error("LLM failed", e);
+        messages.value.push("Error: query failed");
+      }
+   }
+ 
 </script>
 
 <style>
@@ -80,6 +106,21 @@ html, body, #app{
   overflow: hidden;
 }
 
+.chat-window {
+  height: 22%;
+  padding: 22px 24px;
+  border-radius: 8px;
+  background-color: azure;
+  box-shadow: 3cap;
+  margin-bottom: 1.2em;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+.chat-window::-webkit-scrollbar {
+  display: none;
+}
+
 canvas {
   display: block;
 }
@@ -87,5 +128,18 @@ canvas {
 </style>
 
 <template>
+  <!-- TODO: Each chat is a bubble and automatically fold a too big chat -->
+  <div class="chat-window">
+    <div v-if="messages.length===0">Conversation happens here...</div>
+    <div v-for="(msg, index) in messages" :key="index" class="message">
+      {{ msg }}
+    </div>
+  </div>
+
+  <div class="prompt-input-area">
+    <input v-model="prompt" type="text" placeholder="Ciallo~(∠·ω< )⌒★" @keydown.enter="handleSend"></input>
+
+    <button @click="handleSend">Send</button>
+  </div>
   <canvas ref="canvasRef"></canvas>
 </template>

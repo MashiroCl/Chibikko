@@ -1,10 +1,5 @@
 use ollama_rs::Ollama;
-use ollama_rs::generation::completion::request::GenerationRequest;
-use reqwest::Client;
-use serde::Deserialize;
-use tokio::io::{AsyncBufRead, BufReader};
 use ollama_rs::generation::chat::{request::ChatMessageRequest, ChatMessage};
-use ollama_rs::history::ChatHistory;
 
 
 pub async fn run_query(prompt: String)->Result<String, String>{
@@ -12,6 +7,7 @@ pub async fn run_query(prompt: String)->Result<String, String>{
     let mut history:Vec<ChatMessage> = vec![];
 
     let ollama = Ollama::default();
+    println!("Querying the LLM {}", prompt);
 
     let res = ollama
                     .send_chat_messages_with_history(
@@ -22,6 +18,7 @@ pub async fn run_query(prompt: String)->Result<String, String>{
                     ),
                 ).await.map_err(|e| e.to_string())?;
     
+    println!("Response is {}", res.message.content);
     Ok(res.message.content)
 
  }
