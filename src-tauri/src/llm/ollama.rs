@@ -1,9 +1,7 @@
 use ollama_rs::Ollama;
 use ollama_rs::generation::chat::{request::ChatMessageRequest, ChatMessage};
 
-
-pub async fn run_query(prompt: String)->Result<String, String>{
-    let model = "gemma3:4b".to_string();
+pub async fn run_query(prompt: String, model: String)->Result<String, String>{
     let mut history:Vec<ChatMessage> = vec![];
 
     let ollama = Ollama::default();
