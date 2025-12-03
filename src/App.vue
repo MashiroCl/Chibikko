@@ -21,6 +21,7 @@ window.PIXI = PIXI;
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const prompt = ref('')
 const messages = ref<string[]>([])
+const need_voice = ref(false)
 
 onMounted(async () => {
   if(!canvasRef.value){
@@ -77,6 +78,11 @@ function handleClick(model: Live2DModel){
    console.log(stats); 
   }
 
+  interface LlmResponse {
+    text: string;
+    audio: number[] | null;
+  }
+
   const handleSend = async () => {
       const content = prompt.value;
 
@@ -86,8 +92,15 @@ function handleClick(model: Live2DModel){
 
       try{
         console.log("Querying LLM...");
-        const response:string = await invoke("query_llm", {prompt: content});
-        messages.value.push(response);
+        const response: LlmResponse = await invoke("query_llm", {prompt: content, needVoice: need_voice.value});
+        if (response.audio) {
+          const uint8Array = new Uint8Array(response.audio);
+          const blob = new Blob([uint8Array], {type: "audio/wav"});
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          audio.play();
+        }
+        messages.value.push(response.text);
       } catch (e) {
         console.error("LLM failed", e);
         messages.value.push("Error: query failed");
@@ -117,6 +130,17 @@ html, body, #app{
   scrollbar-width: none;
 }
 
+.llm-options {
+  display: flex;
+  align-items: center;
+  color: aqua;
+  gap: 8px;
+}
+
+.llm-options::voice {
+  cursor: pointer;
+}
+
 .chat-window::-webkit-scrollbar {
   display: none;
 }
@@ -135,10 +159,14 @@ canvas {
       {{ msg }}
     </div>
   </div>
-
+  <div class="llm-options">
+    <div class="voice">
+      <input type="checkbox" id="needVoice" v-model="need_voice"/>
+      <label for="needVoice">Voice</label>
+    </div>
+  </div>
   <div class="prompt-input-area">
     <input v-model="prompt" type="text" placeholder="Ciallo~(∠·ω< )⌒★" @keydown.enter="handleSend"></input>
-
     <button @click="handleSend">Send</button>
   </div>
   <canvas ref="canvasRef"></canvas>
