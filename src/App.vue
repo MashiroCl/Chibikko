@@ -18,9 +18,15 @@ declare global{
 }
 window.PIXI = PIXI;
 
+interface Message{
+  content: string;
+  isUser: boolean;
+}
+
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const prompt = ref('')
 const messages = ref<string[]>([])
+const conversation = ref<Message[]>([])
 const need_voice = ref(false)
 
 onMounted(async () => {
@@ -85,9 +91,9 @@ function handleClick(model: Live2DModel){
 
   const handleSend = async () => {
       const content = prompt.value;
-
       if(!content.trim()) return;
 
+      conversation.value.push({content:content, isUser:true});
       prompt.value = '';
 
       try{
@@ -101,6 +107,7 @@ function handleClick(model: Live2DModel){
           audio.play();
         }
         messages.value.push(response.text);
+        conversation.value.push({content:response.text, isUser:false});
       } catch (e) {
         console.error("LLM failed", e);
         messages.value.push("Error: query failed");
@@ -149,12 +156,63 @@ canvas {
   display: block;
 }
 
+.chat-container {
+  width: 100%;
+  max-width: 800px;
+  height: 200px;
+  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+}
+
+.conversation-area {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto; 
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  word-wrap: break-word;
+  font-size: 14px;
+  line-height: 1.4;
+  position: relative;
+}
+
+.user {
+  align-self: flex-end;
+}
+
+.user .bubble {
+  background-color: aqua;
+  color: #000;
+  border-bottom-right-radius: 2px;
+}
 </style>
 
 <template>
   <!-- TODO: Each chat is a bubble and automatically fold a too big chat -->
+  <div class="chat-container">
+    <div class="conversation-area" ref="converstaionContainer">
+      <div v-for="(msg, index) in conversation" :key="index" class="is-user" :class="{'user':msg.isUser, 'llm':!msg.isUser}">
+        <div class="bubble">
+          <!-- TODO: put an cute llm icon here -->
+          <div v-if="!msg.isUser">llm: </div>
+          {{ msg.content }}
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="chat-window">
-    <div v-if="messages.length===0">Conversation happens here...</div>
+    <div v-if="messages.length===0">Ciallo~(∠·ω< )⌒★</div>
     <div v-for="(msg, index) in messages" :key="index" class="message">
       {{ msg }}
     </div>
