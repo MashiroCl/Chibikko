@@ -126,17 +126,6 @@ html, body, #app{
   overflow: hidden;
 }
 
-.chat-window {
-  height: 22%;
-  padding: 22px 24px;
-  border-radius: 8px;
-  background-color: azure;
-  box-shadow: 3cap;
-  margin-bottom: 1.2em;
-  overflow-y: scroll;
-  scrollbar-width: none;
-}
-
 .llm-options {
   display: flex;
   align-items: center;
@@ -146,10 +135,6 @@ html, body, #app{
 
 .llm-options::voice {
   cursor: pointer;
-}
-
-.chat-window::-webkit-scrollbar {
-  display: none;
 }
 
 canvas {
@@ -165,14 +150,14 @@ canvas {
   flex-direction: column;
   margin: 0 auto;
   border-radius: 8px;
-  overflow: hidden;
   background-color: #f5f5f5;
 }
 
 .conversation-area {
   flex: 1;
   padding: 15px;
-  overflow-y: auto; 
+  overflow-y: scroll; 
+  scrollbar-width: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -199,9 +184,9 @@ canvas {
 </style>
 
 <template>
-  <!-- TODO: Each chat is a bubble and automatically fold a too big chat -->
   <div class="chat-container">
     <div class="conversation-area" ref="converstaionContainer">
+      <div v-if="conversation.length===0">Ciallo~(∠·ω< )⌒★</div>
       <div v-for="(msg, index) in conversation" :key="index" class="is-user" :class="{'user':msg.isUser, 'llm':!msg.isUser}">
         <div class="bubble">
           <!-- TODO: put an cute llm icon here -->
@@ -209,12 +194,6 @@ canvas {
           {{ msg.content }}
         </div>
       </div>
-    </div>
-  </div>
-  <div class="chat-window">
-    <div v-if="messages.length===0">Ciallo~(∠·ω< )⌒★</div>
-    <div v-for="(msg, index) in messages" :key="index" class="message">
-      {{ msg }}
     </div>
   </div>
   <div class="llm-options">
