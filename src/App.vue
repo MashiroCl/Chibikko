@@ -34,10 +34,11 @@ onMounted(async () => {
     console.error("No Canvas");
     return;
   }
+
   const app = new PIXI.Application({
     view: canvasRef.value,
-    width: 800,
-    height: 600,
+    width: 200,
+    height: 350,
     backgroundAlpha: 0,
     antialias: true,
   });
@@ -46,10 +47,10 @@ onMounted(async () => {
 
   app.stage.addChild(model)
 
-  model.scale.set(0.25);
+  model.scale.set(0.2);
   model.anchor.set(0.3, 0.3);
-  model.x = 400 - model.width/2;
-  model.y = 300 - model.height/2;
+  model.x = 50;
+  model.y = 70;
 
 
   model.interactive = true;
@@ -124,6 +125,7 @@ html, body, #app{
   height: 100vh;
   background-color: transparent;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .llm-options {
@@ -139,11 +141,14 @@ html, body, #app{
 
 canvas {
   display: block;
+  background-color: red;
+  margin: 0 auto;
+  pointer-events: auto;
 }
 
 .chat-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 600px;
   height: 200px;
   border: 1px solid #ccc;
   display: flex;
@@ -151,6 +156,8 @@ canvas {
   margin: 0 auto;
   border-radius: 8px;
   background-color: #f5f5f5;
+  opacity: 0.9;
+  pointer-events: none;
 }
 
 .conversation-area {
@@ -161,6 +168,7 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  pointer-events: auto;
 }
 
 .bubble {
@@ -170,6 +178,7 @@ canvas {
   font-size: 14px;
   line-height: 1.4;
   position: relative;
+  pointer-events: auto;
 }
 
 .user {
@@ -181,6 +190,28 @@ canvas {
   color: #000;
   border-bottom-right-radius: 2px;
 }
+
+.prompt-input-area {
+  position: relative; 
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  pointer-events: none;
+}
+
+.llm-options input,
+.llm-options label {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.prompt-input-area input,
+.prompt-input-area button {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 </style>
 
 <template>
