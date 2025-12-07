@@ -133,11 +133,9 @@ html, body, #app{
   align-items: center;
   color: aqua;
   gap: 8px;
+  justify-content: center;
 }
 
-.llm-options::voice {
-  cursor: pointer;
-}
 
 canvas {
   display: block;
@@ -215,9 +213,8 @@ canvas {
 </style>
 
 <template>
-  <div class="chat-container">
+  <div v-if="conversation.length!=0" class="chat-container">
     <div class="conversation-area" ref="converstaionContainer">
-      <div v-if="conversation.length===0">Ciallo~(∠·ω< )⌒★</div>
       <div v-for="(msg, index) in conversation" :key="index" class="is-user" :class="{'user':msg.isUser, 'llm':!msg.isUser}">
         <div class="bubble">
           <!-- TODO: put an cute llm icon here -->
